@@ -143,8 +143,8 @@ export default function Home() {
         <aside className="practice-note">
           <span aria-hidden="true">✓</span>
           <p>
-            이번 주에는 <code>Route Handler</code>를 만들고 Backend API와
-            연결합니다.
+            이번 주에는 <code>Neon Postgres</code>를 연결하고 <code>urls</code> 테이블에 매핑을
+            저장합니다.
           </p>
         </aside>
       </section>
