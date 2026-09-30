@@ -143,8 +143,8 @@ export default function Home() {
         <aside className="practice-note">
           <span aria-hidden="true">✓</span>
           <p>
-            이번 주에는 <code>Neon Postgres</code>를 연결하고 <code>urls</code> 테이블에 매핑을
-            저장합니다.
+            이번 주에는 <code>[shortCode]</code> 동적 라우트를 만들고 307 리다이렉트와 404 응답을
+            구현합니다.
           </p>
         </aside>
       </section>
