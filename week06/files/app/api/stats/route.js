@@ -17,12 +17,12 @@ export async function GET() {
     return Response.json(
       {
         summary: {
-          totalUrls: /* TODO */,
-          totalClicks: /* TODO */,
-          clickedUrls: /* TODO */,
-          topUrl: /* TODO */,
+          totalUrls: summary.totalUrls,
+          totalClicks: summary.totalClicks,
+          clickedUrls: summary.clickedUrls,
+          topUrl: topUrl,
         },
-        urls: /* TODO */,
+        urls: urls,
       },
       {
         headers: {
