@@ -143,8 +143,8 @@ export default function Home() {
         <aside className="practice-note">
           <span aria-hidden="true">✓</span>
           <p>
-            이번 주에는 클릭 통계를 기록하고 <code>/admin</code> 화면에서 사용량을
-            확인합니다.
+            이번 주에는 인증과 인가를 분리하고 <code>/admin</code>과 <code>/api/stats</code>를
+            보호합니다.
           </p>
         </aside>
       </section>
