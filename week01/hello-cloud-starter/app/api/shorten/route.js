@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
-import { saveUrl } from "../../../lib/db";
+import { findShortCodeByUrl, saveUrl } from "../../../lib/db";
 
 export const runtime = "nodejs";
 
@@ -32,6 +32,41 @@ function createShortCode(originalUrl, length = 6) {
   }
 
   return code;
+}
+
+/*
+ * normalizeHost()
+ *
+ * 호스트 비교를 위해 포트와 끝의 점(.)을 제거하고 소문자로 맞춥니다.
+ */
+function normalizeHost(value) {
+  if (!value) return null;
+
+  return value
+    .split(",")[0]
+    .trim()
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .replace(/\.$/, "");
+}
+
+/*
+ * getOwnHosts()
+ *
+ * 이 서비스가 사용하는 호스트 목록을 모읍니다.
+ * (요청 Host, 프록시가 전달한 Host, Vercel이 제공하는 배포 주소)
+ */
+function getOwnHosts(request) {
+  const candidates = [
+    request.headers.get("host"),
+    request.headers.get("x-forwarded-host"),
+    new URL(request.url).host,
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ];
+
+  return new Set(candidates.map(normalizeHost).filter(Boolean));
 }
 
 /*
@@ -158,14 +193,55 @@ export async function POST(request) {
 
 
     /*
-     * 6. Short URL 생성
+     * 6. 자기 서비스 URL 차단
+     *
+     * 이 URL Shortener 자신의 주소(경로·http/https 무관)를
+     * 다시 단축하려는 요청은 거부합니다.
+     */
+    if (getOwnHosts(request).has(normalizeHost(parsedUrl.host))) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "INVALID_URL",
+            message: "Cannot shorten a URL of this service.",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+
+    const baseUrl = new URL(request.url).origin;
+
+
+    /*
+     * 7. 동일 URL 중복 처리
+     *
+     * 이미 단축한 URL이면 새로 만들지 않고
+     * 기존 shortCode를 그대로 반환합니다.
+     */
+    const existingCode = await findShortCodeByUrl(originalUrl);
+
+    if (existingCode) {
+      return NextResponse.json(
+        {
+          shortCode: existingCode,
+          shortUrl: `${baseUrl}/${existingCode}`,
+          originalUrl,
+        },
+        { status: 200 }
+      );
+    }
+
+
+    /*
+     * 8. Short URL 생성
      *
      * 모든 검사를 통과했으므로
-     * shortCode와 shortUrl을 생성합니다.
+     * shortCode와 shortUrl을 생성하고 저장합니다.
      */
     const shortCode = createShortCode(originalUrl);
     await saveUrl(shortCode, originalUrl);
-    const baseUrl = new URL(request.url).origin;
 
 
     /*
