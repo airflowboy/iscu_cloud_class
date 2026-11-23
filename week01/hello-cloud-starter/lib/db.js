@@ -3,10 +3,11 @@ import { neon } from "@neondatabase/serverless";
 const sql = neon(process.env.DATABASE_URL);
 
 // 같은 shortCode가 이미 있으면(동일 URL 재요청 등) 오류 없이 넘어갑니다.
+// 13주차 Expand: 컬럼명 변경 중이라 original_url과 destination_url에 함께 저장합니다(Dual Write).
 export async function saveUrl(shortCode, originalUrl) {
   await sql`
-    INSERT INTO urls (short_code, original_url)
-    VALUES (${shortCode}, ${originalUrl})
+    INSERT INTO urls (short_code, original_url, destination_url)
+    VALUES (${shortCode}, ${originalUrl}, ${originalUrl})
     ON CONFLICT (short_code) DO NOTHING
   `;
 }
