@@ -37,7 +37,7 @@ export async function getTopUrl() {
   const rows = await sql`
     SELECT
       short_code,
-      original_url,
+      destination_url,
       click_count
     FROM urls
     WHERE click_count > 0
@@ -53,7 +53,7 @@ export async function getTopUrl() {
 
   return {
     shortCode: row.short_code,
-    originalUrl: row.original_url,
+    originalUrl: row.destination_url,
     clickCount: Number(row.click_count),
   };
 }
@@ -63,7 +63,7 @@ export async function getUrlStats() {
   const rows = await sql`
     SELECT
       short_code,
-      original_url,
+      destination_url,
       click_count,
       created_at,
       last_clicked_at
@@ -74,7 +74,7 @@ export async function getUrlStats() {
 
   return rows.map((row) => ({
     shortCode: row.short_code,
-    originalUrl: row.original_url,
+    originalUrl: row.destination_url,
     clickCount: Number(row.click_count),
     createdAt: row.created_at,
     lastClickedAt: row.last_clicked_at,

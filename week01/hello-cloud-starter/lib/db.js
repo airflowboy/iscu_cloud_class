@@ -3,7 +3,7 @@ import { neon } from "@neondatabase/serverless";
 const sql = neon(process.env.DATABASE_URL);
 
 // 같은 shortCode가 이미 있으면(동일 URL 재요청 등) 오류 없이 넘어갑니다.
-// 13주차 Expand: 컬럼명 변경 중이라 original_url과 destination_url에 함께 저장합니다(Dual Write).
+// 13주차 Migrate: 조회는 destination_url, 저장은 Rollback 대비로 두 컬럼에 함께 합니다(Dual Write).
 export async function saveUrl(shortCode, originalUrl) {
   await sql`
     INSERT INTO urls (short_code, original_url, destination_url)
@@ -17,7 +17,7 @@ export async function findShortCodeByUrl(originalUrl) {
   const rows = await sql`
     SELECT short_code
     FROM urls
-    WHERE original_url = ${originalUrl}
+    WHERE destination_url = ${originalUrl}
     ORDER BY created_at ASC
     LIMIT 1
   `;
@@ -27,12 +27,12 @@ export async function findShortCodeByUrl(originalUrl) {
 
 export async function findUrlByShortCode(shortCode) {
   const rows = await sql`
-    SELECT original_url
+    SELECT destination_url
     FROM urls
     WHERE short_code = ${shortCode}
     LIMIT 1
   `;
 
-  return rows[0]?.original_url ?? null;
+  return rows[0]?.destination_url ?? null;
 }
 
